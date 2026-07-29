@@ -19,34 +19,62 @@
       justify-content: center;
       align-items: center;
       background: linear-gradient(135deg, #0f172a, #1e293b);
+      padding: 20px;
     }
 
     .card {
       background: white;
-      padding: 40px;
-      border-radius: 20px;
+      padding: 35px;
+      border-radius: 18px;
       width: 400px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 20px 40px rgba(0,0,0,.2);
     }
 
     h1 {
+      text-align: center;
       color: #111827;
       margin-bottom: 24px;
       font-size: 28px;
     }
 
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #374151;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+    }
+
     button {
+      width: 100%;
+      padding: 14px;
       border: none;
+      border-radius: 10px;
       background: #2563eb;
       color: white;
-      padding: 14px 32px;
-      border-radius: 12px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.25s ease;
-      width: 100%;
+      transition: .2s;
     }
 
     button:hover {
@@ -55,15 +83,15 @@
     }
 
     button:disabled {
-      opacity: 0.7;
+      opacity: .7;
       cursor: not-allowed;
       transform: none;
     }
 
     #result {
       margin-top: 20px;
-      font-weight: 500;
-      color: #111827;
+      text-align: center;
+      font-weight: 600;
     }
 
     .success {
@@ -77,55 +105,74 @@
 </head>
 <body>
 
-  <div class="card">
-    <h1>GreatWhite Call Agent</h1>
+<div class="card">
+  <h1>📞 GreatWhite Call Agent</h1>
 
-    <button id="apiBtn">
-      📞 Initiate Call
-    </button>
-
-    <div id="result"></div>
+  <div class="input-group">
+    <label for="phoneNumber">Phone Number</label>
+    <input
+      type="tel"
+      id="phoneNumber"
+      placeholder="Enter 10-digit mobile number"
+      maxlength="10"
+    />
   </div>
 
-  <script>
-    const button = document.getElementById("apiBtn");
-    const result = document.getElementById("result");
+  <button id="apiBtn">
+    Initiate Call
+  </button>
 
-    button.addEventListener("click", async () => {
-      button.disabled = true;
-      button.textContent = "Calling...";
-      result.innerHTML = "";
+  <div id="result"></div>
+</div>
 
-      try {
-        const response = await fetch(
-          "https://outbound-call-initiator.onrender.com/make-call",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              numbers: ["9619369240"],
-              account_ids: ["string"]
-            })
-          }
-        );
+<script>
+  const button = document.getElementById("apiBtn");
+  const result = document.getElementById("result");
+  const phoneInput = document.getElementById("phoneNumber");
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+  button.addEventListener("click", async () => {
+    const phone = phoneInput.value.trim();
+
+    if (!/^\d{10}$/.test(phone)) {
+      result.innerHTML =
+        '<div class="error">Please enter a valid 10-digit mobile number.</div>';
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Calling...";
+    result.innerHTML = "";
+
+    try {
+      const response = await fetch(
+        "https://outbound-call-initiator.onrender.com/make-call",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            numbers: [phone],
+            account_ids: ["string"]
+          })
         }
+      );
 
-        result.innerHTML =
-          '<div class="success">✅ Call initiated successfully</div>';
-      } catch (error) {
-        result.innerHTML =
-          '<div class="error">❌ Failed to initiate call</div>';
-      } finally {
-        button.disabled = false;
-        button.textContent = "📞 Initiate Call";
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
-    });
-  </script>
+
+      result.innerHTML =
+        `<div class="success">✅ Call initiated successfully to ${phone}</div>`;
+    } catch (error) {
+      result.innerHTML =
+        '<div class="error">❌ Failed to initiate call.</div>';
+    } finally {
+      button.disabled = false;
+      button.textContent = "Initiate Call";
+    }
+  });
+</script>
 
 </body>
 </html>
